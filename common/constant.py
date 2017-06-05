@@ -1,0 +1,3 @@
+
+#最大句子长度
+MAX_SENTENCE_LENGTH = 80

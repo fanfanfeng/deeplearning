@@ -173,8 +173,11 @@ def train():
         checkpoint_dir = os.path.join(out_dir,"saveModel/")
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
-        saver = tf.train.Saver(tf.global_variables())
-        sess.run(tf.global_variables_initializer())
+            saver = tf.train.Saver(tf.global_variables())
+            sess.run(tf.global_variables_initializer())
+        else:
+            saver = tf.train.Saver(tf.global_variables())
+            saver.restore(sess,checkpoint_dir)
 
 
         step = 0

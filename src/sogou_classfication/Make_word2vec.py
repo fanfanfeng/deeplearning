@@ -16,15 +16,15 @@ def training_word2vec():
                 word_list = reader.read().decode('utf-8').replace('\n','').replace('\r','').strip()
                 sentences.append(word_list)
 
-    model_name = "wordVec"
     model_path = os.path.join(defaultPath.PROJECT_DIRECTORY,sogou_classfication.word2Vect_path)
     if not os.path.exists(model_path):
         os.makedirs(model_path)
 
-    model_save_path = os.path.join(model_path,model_name)
+    model_save_path = os.path.join(model_path,sogou_classfication.model_name)
 
     model = Word2Vec(sentences,max_vocab_size=None,window=8,size=256,min_count=5,workers=4,iter=20)
     model.save(model_save_path)
+
 
 
 if __name__ == '__main__':

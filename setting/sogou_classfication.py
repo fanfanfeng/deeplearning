@@ -16,3 +16,6 @@ data_path_origin  = r'data\sogou_classification_data'
 data_path_jieba = r'data\sogou_classificaiton_data_jieba'
 
 word2Vect_path = r'model\sogou_classification\word2vec'
+model_name = "wordVec"
+
+lstm_model_save_path='model\sogou_classification\lstm'
