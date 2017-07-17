@@ -1,7 +1,7 @@
 # -*-coding:utf-8 -*-
 from jpype import *
 import jieba.posseg as pseg
-startJVM(getDefaultJVMPath(), "-Djava.class.path=/home/fanfan/hanlp/hanlp-1.3.1.jar:/home/fanfan/hanlp", "-Xms1g", "-Xmx1g")
+startJVM(getDefaultJVMPath(), r"-Djava.class.path=/home/fanfan/hanlp/hanlp-1.3.1.jar:/home/fanfan/hanlp", "-Xms1g", "-Xmx1g")
 HanLP = JClass('com.hankcs.hanlp.HanLP')
 crfHanlp = JClass('com.hankcs.hanlp.dependency.CRFDependencyParser')
 nShort = JClass('com.hankcs.hanlp.seg.NShort.NShortSegment')

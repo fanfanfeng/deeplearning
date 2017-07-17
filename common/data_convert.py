@@ -1,5 +1,16 @@
 from common import  constant
 import numpy as np
+from gensim.models import Word2Vec
+
+def load_word2Vec(model_path):
+    word2vec_path = model_path
+    word2vec = Word2Vec.load(word2vec_path)
+    array_list = []
+    for i in word2vec.wv.index2word:
+        array_list.append(word2vec.wv[i])
+
+    return np.array(array_list)
+
 def default_tokenizer():
     return lambda x: x.split()
 
