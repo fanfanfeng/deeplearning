@@ -24,7 +24,7 @@ class Model():
 
 
         self.input_x = tf.placeholder(dtype=tf.int32,shape=[None,self.sentence_length],name="input_x")
-        self.labels = tf.placeholder(dtype=tf.float32,shape=[None,self.sentence_length],name='label')
+        self.labels = tf.placeholder(dtype=tf.float32,shape=[None,self.sentence_length,self.tags_num],name='label')
         self.lengths = tf.placeholder(dtype=tf.int32,shape=[None],name='lengths')
         self.dropout = tf.placeholder(dtype=tf.float32,name='dropout')
 
@@ -45,13 +45,21 @@ class Model():
             scores = tf.matmul(rnn_features,w1) + b1
 
         with tf.variable_scope("pridict"):
-            prediction = tf.reshape(scores, [-1, self.sentence_length, self.tags_num])
-            prediction = tf.arg_max(prediction,dimension=2)
-            prediction = tf.cast(prediction,dtype=tf.float32)
+            self.prediction = tf.reshape(scores, [-1, self.sentence_length, self.tags_num])
+            if 1:
+                self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.prediction,labels=self.labels))
+            else:
+                cross_entropy = self.labels * tf.log(self.prediction)
+                cross_entropy = -tf.reduce_sum(cross_entropy, reduction_indices=2)
+                mask = tf.sign(tf.reduce_max(tf.abs(self.labels), reduction_indices=2))
+                cross_entropy *= mask
+                cross_entropy = tf.reduce_sum(cross_entropy, reduction_indices=1)
+                cross_entropy /= tf.cast(self.lengths, tf.float32)
+                self.loss = tf.reduce_mean(cross_entropy)
             #cross_entropy = #self.labels * #tf.log(self.prediction)
             #cross_entropy = -tf.reduce_sum(cross_entropy, reduction_indices=1)
             #cross_entropy /= tf.cast(self.lengths, tf.float32)
-            self.loss =  tf.reduce_mean(-1.0 * prediction)
+            #self.loss =  tf.reduce_mean(-1.0 * prediction)
 
         #self.loss =  tf.reduce_sum(loss) / self.batch_size
         self.global_step = tf.Variable(0, trainable=False, name="global_step")
@@ -113,20 +121,26 @@ class Model():
 
     def test_accurate(self,sess,inputx,label,lengths):
         feed_dict = self.create_feed_dict(inputx,label,lengths,is_training=False)
-        fetch = [self.scores,self.trans_form]
-        scores,trans_form = sess.run(fetch, feed_dict)
+        fetch = self.prediction
+        prediction = sess.run(fetch, feed_dict)
         correct_num = 0
-        total_labels = 0
-        for score_,length_,label_ in zip(scores,lengths,label):
-            if length_ ==0:
-                continue
-            score = score_[:length_]
-            path,_ = crf.viterbi_decode(score,trans_form)
-            label_path = label_[:length_]
-            correct_num += np.sum(np.equal(path,label_path))
-            total_labels += length_
+        total_num = 0
 
-        accuracy = 100.0 * correct_num / float(total_labels)
+        pred_2_D = np.argmax(prediction,2)
+        label_2_d = np.argmax(label,2)
+
+        for pred,length_,label_ in zip(pred_2_D,lengths,label_2_d):
+            pred = pred[:length_]
+            label_ = label_[:length_]
+            temp = np.equal(pred,label_)
+            correct_num += np.sum(temp)
+            total_num +=length_
+            print(pred)
+
+
+
+
+        accuracy = 100.0 * correct_num / float(total_num)
         return  accuracy
 
 
@@ -134,15 +148,12 @@ class Model():
 
     def predict(self,sess,input,length):
         feed_dict = self.create_feed_dict(input, None, length, is_training=False)
-        fetch = [self.scores, self.trans_form]
-        scores, trans_form = sess.run(fetch, feed_dict)
-        for score_, length_ in zip(scores, length):
-            score = score_[:length_]
-            path, _ = crf.viterbi_decode(score, trans_form)
-
+        fetch = self.prediction
+        prediction = sess.run(fetch, feed_dict)
+        pred_2_D = np.argmax(prediction, 2)
+        for pre, length_ in zip(pred_2_D, length):
+            path = pre[:length_]
         return path
-
-
 
     def out_put_sentences(self,path,origin_sentence):
         out_sentent = ""

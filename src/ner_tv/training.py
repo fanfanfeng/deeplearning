@@ -2,7 +2,7 @@
 import tensorflow as tf
 
 from setting import ner_tv
-from src.ner_tv.lstm import data_loader
+from src.ner_tv import data_loader
 from src.ner_tv.lstm import bi_lstm_model_no_crf
 
 

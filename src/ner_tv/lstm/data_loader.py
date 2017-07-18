@@ -38,14 +38,18 @@ def load_data():
                     continue
                 item_x.append(word2vec.wv.vocab[tag_x].index)
                 tag_id = ner_tv.tag_to_id[tag_y]
-                item_y.append(tag_id)
+                vector = np.zeros(ner_tv.flags.tags_num)
+                vector[tag_id] = 1.0
+                item_y.append(vector)
 
                 if len(item_y) == ner_tv.flags.sentence_length:
                     break
             length = len(item_x)
             if len(item_x) < ner_tv.flags.sentence_length:
                 item_x += [endChar_id] * (ner_tv.flags.sentence_length - len(item_x))
-                item_y += [0] * (ner_tv.flags.sentence_length - len(item_y))
+                vector = np.zeros(ner_tv.flags.tags_num)
+                vector[0] = 1.0
+                item_y += [vector] * (ner_tv.flags.sentence_length - len(item_y))
 
             if item_x and item_y and len(item_x) == len(item_y):
                 x.append(item_x)

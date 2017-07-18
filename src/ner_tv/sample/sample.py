@@ -1,4 +1,4 @@
-from model import Model
+from src.ner_tv.sample.model import Model
 import argparse
 import tensorflow as tf
 import pickle as pkl
