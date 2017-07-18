@@ -26,6 +26,7 @@ class model():
         embedding = tf.Variable(word2vec,"word_emb")
         inputs_embed = tf.nn.embedding_lookup(embedding,self.inputs)
 
+        inputs_embed = tf.unstack(inputs_embed,self.params.sentence_max_len,1)
         inputs_embed = tf.nn.dropout(inputs_embed,self.dropout)
 
         if self.params.feature_dim:
@@ -54,6 +55,6 @@ class model():
             fw_cell = rnn.LSTMCell(self.params.neaurl_hidden_dim,use_peepholes=True,initializer=self.initializer)
             bw_cell = rnn.LSTMCell(self.params.neaurl_hidden_dim,use_peepholes=True,initializer=self.initializer)
 
-            outputs,_ = tf.nn.bidirectional_dynamic_rnn(fw_cell,bw_cell,inputs,dtype=tf.float32)
+            outputs,_ = tf.nn.bidirectional_dynamic_rnn(fw_cell,bw_cell,inputs,dtype=tf.float32,time_major=True)
             lstm_features = tf.reshape(outputs, [-1, self.params.neaurl_hidden_dim * 2])
             return lstm_features

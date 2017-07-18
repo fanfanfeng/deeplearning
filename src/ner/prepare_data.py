@@ -7,7 +7,7 @@ import random
 import numpy as np
 from gensim.models import Word2Vec
 
-max_length = 50
+max_length = 60
 def read_conll_file(path):
     """
     This function will Load sentences in Conll format.
@@ -48,15 +48,14 @@ def read_conll_file(path):
             if len(words) > 1:
                 if words[0] not in word2vec.wv.vocab:
                     continue
-                if len(sentence_x) <50:
+                if len(sentence_x) <60:
                     sentence_x.append(word2vec.wv.vocab[words[0]].index)
                     sentence_y.append(ner.tag_to_id[words[1]])
     if len(sentence_x) > 0:
         sentences_x.append(sentence_x)
         sentences_y.append(sentence_y)
 
-    return  {"x":np.asarray(sentences_x),"y":np.asarray(sentences_y),"length":np.asarray(sentence_lengths)}
-
+    return  {"x":np.array(sentences_x),"y":np.array(sentences_y),"length":np.array(sentence_lengths)}
 
 def load_word2Vec():
 
@@ -115,6 +114,11 @@ def load_data():
 
 if __name__ == '__main__':
     train_data = read_conll_file(ner.training_path)
+
+    b = BatchManager(train_data,121)
+    for i in b.iter_batch():
+        train_x =i['x']
+        b = np.asarray(train_x,dtype=np.int32)
     #train_data = make_vec_from_data(train_data)
     #print(train_data.keys())
     for i in range(10):

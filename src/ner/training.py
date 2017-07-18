@@ -18,18 +18,18 @@ tf.app.flags.DEFINE_string("model_path", 'modelSave/', "path to save model")
 
 #model setting
 tf.flags.DEFINE_integer('min_freq',2,"minimum count of word")
-tf.flags.DEFINE_integer('sentence_max_len',50,'maxium words in a sentence')
+tf.flags.DEFINE_integer('sentence_max_len',60,'maxium words in a sentence')
 tf.flags.DEFINE_integer('input_dim',50,"word vec size")
-tf.flags.DEFINE_integer('neaurl_hidden_dim',256,"dimension of the lstm hidden nuits")
+tf.flags.DEFINE_integer('neaurl_hidden_dim',128,"dimension of the lstm hidden nuits")
 tf.flags.DEFINE_string('feature_dim',0,'dimension of extra features,0 for not used')
 
 #config for training
 tf.flags.DEFINE_float('dropout',0.5,'dropout rate')
 tf.flags.DEFINE_float('clip',5,'gradient to clip')
-tf.flags.DEFINE_float('learning_rate',0.0001,'initial learning rate')
-tf.flags.DEFINE_integer('max_epoch',150,'maxinum training epochs')
-tf.flags.DEFINE_integer('batch_size',20,'num of sentences per batch')
-tf.flags.DEFINE_integer("steps_per_checkpoint",100,'steps per checkpoint')
+tf.flags.DEFINE_float('learning_rate',0.01,'initial learning rate')
+tf.flags.DEFINE_integer('max_epoch',20,'maxinum training epochs')
+tf.flags.DEFINE_integer('batch_size',100,'num of sentences per batch')
+tf.flags.DEFINE_integer("steps_per_checkpoint",10,'steps per checkpoint')
 tf.flags.DEFINE_integer("valid_batch_size",100,'num of sentences per batch')
 
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
                 model.inputs:batch['x'],
                 model.labels:batch['y'],
                 model.dropout:1,
-                model.features:0,
+                #model.features:0,
                 model.lengths:batch["lengths"],
             }
 
@@ -130,10 +130,11 @@ if __name__ == '__main__':
                 path,_ = crf.viterbi_decode(score,trans)
 
                 #evaluate word-level accuracy
-                correct_num += np.sum(np.equal(path,y_))
+                correct_num += np.sum(np.equal(path,y_[:length]))
                 total_num += length
         correct_rate = 100 * correct_num/total_num
-        print("end test correcnt rate: {:.2f }%%".format(correct_rate))
+        print("end test correcnt rate: {:.2f}%%".format(correct_rate))
+        saver.save(sess,FLAGS.model_path)
 
 
 
