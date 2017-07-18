@@ -170,14 +170,19 @@ def train():
         train_summary_writer = tf.summary.FileWriter(os.path.join(out_dir,"summaries","train"),sess.graph)
         valid_summary_writer = tf.summary.FileWriter(os.path.join(out_dir,"summaries","valid"),sess.graph)
 
-        checkpoint_dir = os.path.join(out_dir,"saveModel/")
+        sess.run(tf.global_variables_initializer())
+        checkpoint_dir = "saveModel1/" #os.path.join(out_dir,"saveModel1/")
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
-            saver = tf.train.Saver(tf.global_variables())
-            sess.run(tf.global_variables_initializer())
+            saver = tf.train.Saver()
         else:
-            saver = tf.train.Saver(tf.global_variables())
-            saver.restore(sess,checkpoint_dir)
+            checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
+            #saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
+            #saver.restore(sess, checkpoint_file)
+            #module_file = tf.train.latest_checkpoint(checkpoint_dir)
+            saver = tf.train.Saver()
+            saver.restore(sess,checkpoint_file)
+
 
 
         step = 0

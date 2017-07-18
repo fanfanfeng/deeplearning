@@ -64,29 +64,29 @@ def train():
     #hidden_neural_size,隐层单元数，默认为256
     tf.flags.DEFINE_integer('hidden_neural_size',128,"LSTM hidden neural size")
     #dropout_keep_prob,保留一个神经元的概率，这个概率只在训练的时候用到，默认0.5
-    tf.flags.DEFINE_float('dropout_keep_prob',0.5,"Dropout keep probability")
+    tf.flags.DEFINE_float('dropout_keep_prob',0.8,"Dropout keep probability")
     #batch_size,每批读入样本的数量
     tf.flags.DEFINE_integer('batch_size',500,'Batch Size')
     #max_sentence_length ,文本最大长度
     tf.flags.DEFINE_integer('max_sentence_length',500,'max sentence length')
     #initial_learning_rate,初始的学习率，默认为0.01
-    tf.flags.DEFINE_float('initial_learning_rate',0.001,'init learning rate')
+    tf.flags.DEFINE_float('initial_learning_rate',0.01,'init learning rate')
     #min_learning_rate,学习率的最小值，默认为0.0001
     tf.flags.DEFINE_float('min_learning_rate',0.00001,'min learning rate')
     #decay_rate，学习率衰减率
-    tf.flags.DEFINE_float('decay_rate',0.5,'the learning rate decay')
+    tf.flags.DEFINE_float('decay_rate',0.2,'the learning rate decay')
     #decay_step,学习率衰减步长,默认为1000
-    tf.flags.DEFINE_integer('decay_step',1000,"Steps after which learning rate decays")
+    tf.flags.DEFINE_integer('decay_step',800,"Steps after which learning rate decays")
     #init_scale，参数随机初始化最大值，默认为0.1
     tf.flags.DEFINE_float('init_scale',0.1,'init scale')
     #max_grad_norm，梯度最大值，超过则截断，默认为5
     tf.flags.DEFINE_integer('max_grad_norm',5,"max_grad_norm")
     #num_epochs，每次训练读取的数据随机的次数
-    tf.flags.DEFINE_integer('num_epochs',200,"Number of trainning epochs")
+    tf.flags.DEFINE_integer('num_epochs',300,"Number of trainning epochs")
     #valid_num，训练数据中，用于验证数据的数量
     tf.flags.DEFINE_integer('valid_num',16000,'num of validation')
     #show_every，每次固定迭代次数以后，输出结果
-    tf.flags.DEFINE_integer('show_every',10,"Show train results after this many steps")
+    tf.flags.DEFINE_integer('show_every',20,"Show train results after this many steps")
     #valid_every,在每个固定迭代次数之后，在验证数据上评估模型
     tf.flags.DEFINE_integer('valid_every',100,"Evaluate model on dev set after this many steps")
     #checkpoint_every,在每个固定迭代次数之后，保存模型，默认为100
@@ -170,7 +170,7 @@ def train():
         train_summary_writer = tf.summary.FileWriter(os.path.join(out_dir,"summaries","train"),sess.graph)
         valid_summary_writer = tf.summary.FileWriter(os.path.join(out_dir,"summaries","valid"),sess.graph)
 
-        checkpoint_dir = os.path.join(out_dir,"saveModel/")
+        checkpoint_dir = os.path.join(out_dir,"saveModel1/")
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
         saver = tf.train.Saver(tf.global_variables())

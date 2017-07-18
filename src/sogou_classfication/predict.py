@@ -6,7 +6,7 @@ from setting import defaultPath,sogou_classfication
 from common import data_convert,stop_word
 from gensim.models import Word2Vec
 
-mode_save_path = os.path.join(defaultPath.PROJECT_DIRECTORY,sogou_classfication.lstm_model_save_path,"saveModel")
+mode_save_path = os.path.join(defaultPath.PROJECT_DIRECTORY,sogou_classfication.lstm_model_save_path,"saveModel1")
 
 # checkpoint_dir,训练时保存的模型
 tf.flags.DEFINE_string('checkpoint_dir',mode_save_path,"model path")
@@ -66,7 +66,7 @@ def predict_doc(text):
 
 if __name__ == '__main__':
     text="""
-    三九医药 （ 000999 ） 和 三九生化 （ 000403 ） 今日 同时 发布公告 ， 三九医药 转让 三九生化 38.11 ％ 股权 事宜 获得 国资委 批准 
+    我想看电影
     """
     print(predict_doc(text))
 
