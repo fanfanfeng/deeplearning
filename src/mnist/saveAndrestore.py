@@ -51,34 +51,41 @@ init = tf.global_variables_initializer()
 
 saver = tf.train.Saver()
 print("Start 1st session..")
-with tf.Session() as sess:
-    sess.run(init)
-    for epoch in range(3):
-        avg_cost = 0
-        total_batch = int(mnist.train.num_examples/batch_size)
+if 0:
+    with tf.Session() as sess:
+        sess.run(init)
+        for epoch in range(3):
+            avg_cost = 0
+            total_batch = int(mnist.train.num_examples/batch_size)
 
-        for i in range(total_batch):
-            batch_x,batch_y = mnist.train.next_batch(batch_size)
-            _,c = sess.run([optimizer,cost],feed_dict={x:batch_x,y:batch_y})
+            for i in range(total_batch):
+                batch_x,batch_y = mnist.train.next_batch(batch_size)
+                _,c = sess.run([optimizer,cost],feed_dict={x:batch_x,y:batch_y})
 
-            avg_cost += c/ total_batch
+                avg_cost += c/ total_batch
 
-        if epoch % display_step == 0:
-            print("Epoch:","%04d" % (epoch + 1),"Cost = ", "{:.9f}".format(avg_cost))
-    print("Fist Optimization Finished!")
+            if epoch % display_step == 0:
+                print("Epoch:","%04d" % (epoch + 1),"Cost = ", "{:.9f}".format(avg_cost))
 
-    correct_prediction = tf.equal(tf.argmax(pred,1),tf.argmax(y,1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction,'float'))
-    print("Accuracy:",accuracy.eval({x:mnist.test.images,y:mnist.test.labels}))
+            saver.save(sess, model_path, epoch)
+        print("Fist Optimization Finished!")
 
-    save_path = saver.save(sess,model_path)
-    print("Model saved in file:%s" % save_path)
+        correct_prediction = tf.equal(tf.argmax(pred,1),tf.argmax(y,1))
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction,'float'))
+        print("Accuracy:",accuracy.eval({x:mnist.test.images,y:mnist.test.labels}))
 
+        #save_path = saver.save(sess,model_path,)
+        #print("Model saved in file:%s" % save_path)
+save_path = "model/"
 print("Starting 2nd session....")
 
 with tf.Session() as sess:
     sess.run(init)
-    saver.restore(sess,model_path)
+    #checkpoint_file = tf.train.latest_checkpoint(model_path)
+    #saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
+    #saver.restore(sess,checkpoint_file)
+    saver = tf.train.Saver()
+    saver.restore(sess, save_path)
     print("Model restored from file:%s" % save_path)
 
     for epoch in range(7):
@@ -94,7 +101,8 @@ with tf.Session() as sess:
             print("Epoch:","%04d" % (epoch + 1),"cost =", "{:.9f}".format(avg_cost) )
 
     print("Second Optimization Finished!")
-
+    save_path = saver.save(sess, model_path)
+    print("Model saved in file:%s" % save_path)
     correct_prediction = tf.equal(tf.argmax(pred,1),tf.argmax(y,1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction,'float'))
     print("Accuracy:",accuracy.eval({x:mnist.test.images,y:mnist.test.labels}))

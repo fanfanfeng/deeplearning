@@ -42,17 +42,19 @@ with tf.Graph().as_default():
 
         #add a training op to tune the parameters
         loss = tf.reduce_mean(-log_likelihood)
+        vars = tf.trainable_variables()
         tran_op = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(loss)
 
         session.run(tf.global_variables_initializer())
-        for i in range(1000):
-            tf_unary_scores,tf_transition_params,_ = session.run([unary_scores,transition_params,tran_op])
+        for i in range(3000000):
+            tf_unary_scores,tf_transition_params,_,loss_real = session.run([unary_scores,transition_params,tran_op,loss])
 
-            if i % 100 == 0:
+            if i % 1000 == 0:
+                print("loss {:g}".format(loss_real))
                 correct_labels = 0
                 total_labels = 0
                 for tf_unary_scores_,y_,sequence_length_ in zip(tf_unary_scores,y,sequnce_lengths):
-
+                    break
                     #remove padding from the scores and tag sequence
                     tf_unary_scores_ = tf_unary_scores_[:sequence_length_]
                     y_ = y_[:sequence_length_]
@@ -62,8 +64,8 @@ with tf.Graph().as_default():
                     #evaluate word-level accuracy
                     correct_labels += np.sum(np.equal(viterbi_sequence,y_))
                     total_labels += sequence_length_
-                accuracy = 100.0 * correct_labels/float(total_labels)
-                print("accuracy: %.2f %%" % accuracy)
+                #accuracy = 100.0 * correct_labels/float(total_labels)
+                #print("accuracy: %.2f %%" % accuracy)
 
 
 
