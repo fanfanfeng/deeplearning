@@ -37,10 +37,15 @@ def load_data(max_sentence_length = None):
             if label_file.endswith(".csv"):
                 continue
             with open(os.path.join(label_dir_path,label_file),'rb') as reader:
+                i = 0
                 for line in reader:
+                    i +=1
                     text = line.decode('utf-8').replace('\n','').replace('\r','').strip()
                     x_raw.append(text)
                     y.append(label_item)
+
+                    if i>3000:
+                        break
         if not max_sentence_length:
             max_sentence_length = max([len(item.split(" ") for item in x_raw)])
         x = []
@@ -59,17 +64,17 @@ def train():
     #num_classes,分类的类别
     tf.flags.DEFINE_integer('num_classes',7,'class num')
     #embdding_dim,每个词表表示成向量的长度
-    tf.flags.DEFINE_integer('embedding_dim',128,'Dimensionality of character embedding')
+    tf.flags.DEFINE_integer('embedding_dim',256,'Dimensionality of character embedding')
     #hidden_layer_num,隐层书,默认为3
     tf.flags.DEFINE_integer('hidden_layer_num',3,"LSTM hidden layer num")
     #hidden_neural_size,隐层单元数，默认为256
-    tf.flags.DEFINE_integer('hidden_neural_size',128,"LSTM hidden neural size")
+    tf.flags.DEFINE_integer('hidden_neural_size',256,"LSTM hidden neural size")
     #dropout_keep_prob,保留一个神经元的概率，这个概率只在训练的时候用到，默认0.5
     tf.flags.DEFINE_float('dropout_keep_prob',0.8,"Dropout keep probability")
     #batch_size,每批读入样本的数量
-    tf.flags.DEFINE_integer('batch_size',500,'Batch Size')
+    tf.flags.DEFINE_integer('batch_size',300,'Batch Size')
     #max_sentence_length ,文本最大长度
-    tf.flags.DEFINE_integer('max_sentence_length',500,'max sentence length')
+    tf.flags.DEFINE_integer('max_sentence_length',80,'max sentence length')
     #initial_learning_rate,初始的学习率，默认为0.01
     tf.flags.DEFINE_float('initial_learning_rate',0.01,'init learning rate')
     #min_learning_rate,学习率的最小值，默认为0.0001
@@ -85,7 +90,7 @@ def train():
     #num_epochs，每次训练读取的数据随机的次数
     tf.flags.DEFINE_integer('num_epochs',300,"Number of trainning epochs")
     #valid_num，训练数据中，用于验证数据的数量
-    tf.flags.DEFINE_integer('valid_num',55000,'num of validation')
+    tf.flags.DEFINE_integer('valid_num',2000,'num of validation')
     #show_every，每次固定迭代次数以后，输出结果
     tf.flags.DEFINE_integer('show_every',10,"Show train results after this many steps")
     #valid_every,在每个固定迭代次数之后，在验证数据上评估模型
@@ -136,8 +141,8 @@ def train():
     y_shuffled = y[shuffle_indices]
     #分割训练集和测试机，用于验证
     valid_sample_index = FLAGS.valid_num
-    x_train,x_valid = x_shuffled[:valid_sample_index],x_shuffled[valid_sample_index:]
-    y_train,y_valid = y_shuffled[:valid_sample_index],y_shuffled[valid_sample_index:]
+    x_valid,x_train= x_shuffled[:valid_sample_index],x_shuffled[valid_sample_index:]
+    y_valid,y_train= y_shuffled[:valid_sample_index],y_shuffled[valid_sample_index:]
 
     print("Vocabulary Size:{:d}".format(len(word2vec_model.wv.vocab) + 1))
     print("Train/Valid split: {:d}/{:d}".format(len(y_train),len(y_valid)))
@@ -167,12 +172,12 @@ def train():
 
 
         timestamp = str(int(time.time()))
-        out_dir = "saveModel/"#os.path.join(defaultPath.PROJECT_DIRECTORY,sogou_classfication.lstm_model_save_path)
+        out_dir = "saveModel1/"#os.path.join(defaultPath.PROJECT_DIRECTORY,sogou_classfication.lstm_model_save_path)
         print("Model save path {}\n".format(out_dir))
         #train_summary_writer = tf.summary.FileWriter(os.path.join(out_dir,"summaries","train"),sess.graph)
         #valid_summary_writer = tf.summary.FileWriter(os.path.join(out_dir,"summaries","valid"),sess.graph)
 
-        checkpoint_dir = os.path.join(out_dir,"saveModel/")
+        checkpoint_dir = os.path.join(out_dir,"saveModel1/")
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
         saver = tf.train.Saver(tf.global_variables())
