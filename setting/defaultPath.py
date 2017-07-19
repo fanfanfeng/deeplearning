@@ -1,5 +1,5 @@
 import os
-PROJECT_DIRECTORY ="E:\\python_work\\deeplearning" #os.path.dirname(os.path.abspath(os.curdir))
+PROJECT_DIRECTORY =os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 Stop_Words = r"data/stop_words.txt"
