@@ -66,8 +66,8 @@ def processToken(token,sentence,out,end):
             totalChars += sentence.chars
             sentence.generate_tr_line(x)
             nn = len(x)
-            for j in range(nn,MAX_LEN):
-                x.append("。/S")
+            #for j in range(nn,MAX_LEN):
+                #x.append("。/S")
             line = " ".join(x)
 
             out.write(("%s\n" % (line)).encode('utf-8'))
@@ -115,6 +115,9 @@ if __name__ == "__main__":
     rootDir = nlp_segment.people_2014
     outPath = nlp_segment.train_path
     out = open(outPath,'wb')
+
+    test_write = open(nlp_segment.test_path,'wb')
+
     for dirName,subdirList,fileList in os.walk(rootDir):
 
         curDir = os.path.join(rootDir,dirName)
@@ -122,12 +125,16 @@ if __name__ == "__main__":
             if file.endswith('.txt'):
                 curFile = os.path.join(curDir,file)
                 fp = open(curFile,'rb')
-                for line in fp.readlines():
+                for index,line in enumerate(fp.readlines()):
                     line = line.decode('utf-8')
                     line = line.strip()
-                    processLine(line,out)
+                    if index % 9 == 0:
+                        processLine(line,test_write)
+                    else:
+                        processLine(line,out)
                 fp.close()
     out.close()
+    test_write.close()
     print("total:%d, long lines:%d, chars:%d" %
               (totalLine, longLine, totalChars))
 
