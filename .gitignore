@@ -3,3 +3,5 @@ data/
 dashboard_log/*
 *.pyc
 model/
+
+*saveModel

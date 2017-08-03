@@ -2,40 +2,65 @@ from __future__ import absolute_import
 from __future__ import  division
 from __future__ import print_function
 
-import  numpy as np
-import tensorflow as tf
 
-
-from tensorflow.contrib import learn
-
-import os
+import numpy as np
 from tensorflow.contrib.layers import l2_regularizer
+import tensorflow as tf
+import os
+
 from tensorflow.contrib import crf
-
-from setting import nlp_segment
 from tensorflow.contrib import rnn
-from gensim.models import Word2Vec
-from common import data_convert
 
+from setting import ner_tv
+
+train_steps = 500000
+
+
+
+
+
+from gensim.models import  Word2Vec
+def load_word2Vec(model_path):
+    word2vec_path = model_path
+    word2vec = Word2Vec.load(word2vec_path)
+    array_list = []
+    for i in word2vec.wv.index2word:
+        array_list.append(word2vec.wv[i])
+
+    return np.array(array_list)
 
 
 
 
 class Model:
-    def __init__(self,embeddingSize,distinctTagNum,c2vPath,numHidden):
-        self.embeddingSize = embeddingSize
-        self.distinctTagNum = distinctTagNum
-        self.numHidden = numHidden
-        self.c2v = self.c2v(c2vPath)
+    def __init__(self):
+        self.embeddingSize = ner_tv.flags.embedding_dim
+        self.distinctTagNum = ner_tv.flags.tags_num
+        self.numHidden = ner_tv.flags.hidden_neural_size
+        self.c2v = load_word2Vec(ner_tv.word2vec_path)
         self.words = tf.Variable(self.c2v,name = 'words')
+        self.sentence_length = ner_tv.flags.sentence_length
+        self.initial_learning_rate = ner_tv.flags.initial_learning_rate
+
         with tf.variable_scope('Softmax') as scope:
-            self.W = tf.get_variable(shape=[numHidden *2,distinctTagNum],
+            self.W = tf.get_variable(shape=[self.numHidden *2,self.distinctTagNum],
                                      initializer=tf.truncated_normal_initializer(stddev=0.01),
                                      name='weights',
                                      regularizer= l2_regularizer(0.001))
-            self.b = tf.Variable(tf.zeros([distinctTagNum],name='bias'))
+            self.b = tf.Variable(tf.zeros([self.distinctTagNum],name='bias'))
         self.trains_params = None
-        self.inp = tf.placeholder(tf.int32,shape=[None,nlp_segment.flags.max_sentence_len],name='input_placeholder')
+        self.inp = tf.placeholder(tf.int32,shape=[None,self.sentence_length],name='input_placeholder')
+
+        self.model_save_path = ner_tv.training_model_bi_lstm
+        self.saver = tf.train.Saver()
+
+    def restore_model(self,sess):
+        check_point = tf.train.get_checkpoint_state(self.model_save_path)
+        if check_point:
+            self.saver.restore(sess,check_point.model_checkpoint_path)
+        else:
+            raise FileNotFoundError("not found the save model")
+
 
 
 
@@ -56,13 +81,13 @@ class Model:
             lstm_fw = rnn.LSTMCell(self.numHidden)
             lsmt_bw = rnn.LSTMCell(self.numHidden)
 
-            inputs = tf.unstack(word_verctors,nlp_segment.flags.max_sentence_len,1)
+            inputs = tf.unstack(word_verctors,self.sentence_length,1)
             output,_,_ = rnn.static_bidirectional_rnn(lstm_fw,lsmt_bw,inputs,sequence_length=length_64,dtype=tf.float32)
             output = tf.reshape(output,[-1,self.numHidden * 2])
 
         matricized_unary_scores = tf.matmul(output,self.W) + self.b
         unary_scores = tf.reshape(matricized_unary_scores,
-                                  [-1,nlp_segment.flags.max_sentence_len,self.distinctTagNum])
+                                  [-1,self.sentence_length,self.distinctTagNum])
         return unary_scores,length
 
     def loss(self,X,Y):
@@ -75,13 +100,20 @@ class Model:
         P,sequence_length  = self.inference(self.inp,reuse=True,trainMode=False)
         return P,sequence_length
 
+    def train_op(self,total_loss):
+        return tf.train.AdamOptimizer(self.initial_learning_rate).minimize(total_loss)
+
+    def training_step(self):
+        pass
+
+
 def read_csv(batch_size,file_name):
     filename_queue = tf.train.string_input_producer([file_name])
     reader = tf.TextLineReader(skip_header_lines=0)
     key,value = reader.read(filename_queue)
 
     decoded =  tf.decode_csv(value,field_delim=' ',
-                             record_defaults=[[0] for i in range(nlp_segment.flags.max_sentence_len*2)])
+                             record_defaults=[[0] for i in range(ner_tv.flags.sentence_length*2)])
     return tf.train.shuffle_batch(decoded,
                                   batch_size=batch_size,
                                   capacity=batch_size*50,
@@ -90,9 +122,9 @@ def read_csv(batch_size,file_name):
 
 
 def inputs(path):
-    whole = read_csv(nlp_segment.flags.batch_size,path)
-    features = tf.transpose(tf.stack(whole[0:nlp_segment.flags.max_sentence_len]))
-    label = tf.transpose(tf.stack(whole[nlp_segment.flags.max_sentence_len:]))
+    whole = read_csv(ner_tv.flags.batch_size,path)
+    features = tf.transpose(tf.stack(whole[0:ner_tv.flags.sentence_length]))
+    label = tf.transpose(tf.stack(whole[ner_tv.flags.sentence_length:]))
     return features,label
 
 
@@ -105,23 +137,23 @@ def do_load_data(path):
         if not line:
             continue
         ss = line.split(" ")
-        assert (len(ss) == (nlp_segment.flags.max_sentence_len *2))
+        assert (len(ss) == (ner_tv.flags.sentence_length *2))
         lx = []
         ly = []
-        for i in range(nlp_segment.flags.max_sentence_len):
+        for i in range(ner_tv.flags.sentence_length):
             lx.append(int(ss[i]))
-            ly.append(int(ss[i + nlp_segment.flags.max_sentence_len]))
+            ly.append(int(ss[i + ner_tv.flags.sentence_length]))
         x.append(lx)
         y.append(ly)
     fp.close()
     return np.array(x),np.array(y)
 
 def train(total_loss):
-    return tf.train.AdamOptimizer(nlp_segment.flags.learning_rate).minimize(total_loss)
+    return tf.train.AdamOptimizer(ner_tv.flags.initial_learning_rate).minimize(total_loss)
 
 def test_evaluate(sess,unary_score,test_sequence_length,transMatrix,inp,tX,tY):
     totalEqual = 0
-    batchSize = nlp_segment.flags.batch_size
+    batchSize = ner_tv.flags.batch_size
     totalLen = tX.shape[0]
     numBatch = int((tX.shape[0] -1)/batchSize) +1
     correct_labels = 0
@@ -146,36 +178,40 @@ def test_evaluate(sess,unary_score,test_sequence_length,transMatrix,inp,tX,tY):
     print('Accuracy: %.2f%%' % accuracy)
 
 def main(argv):
-    trainDataPath = os.path.join(nlp_segment.data_path,"old/train.txt")
-    testDataPath = os.path.join(nlp_segment.data_path, "old/test.txt")
+    trainDataPath = os.path.join(os.path.dirname(ner_tv.data_path),"train.txt")
+    testDataPath = os.path.join(os.path.dirname(ner_tv.data_path), "test.txt")
 
     graph = tf.Graph()
     with graph.as_default():
-        model = Model(nlp_segment.flags.embedding_size,nlp_segment.flags.num_tags,nlp_segment.word_vec_path,
-                      nlp_segment.flags.num_hidden)
+        model = Model()
         print('train data path:',trainDataPath)
         X,Y = inputs(trainDataPath)
-        tX,tY = do_load_data(testDataPath)
+        #tX,tY = do_load_data(testDataPath)
         total_loss = model.loss(X,Y)
         train_op = train(total_loss)
-        test_unary_score,test_sequence_length = model.test_unary_score()
-        sv = tf.train.Supervisor(graph=graph,logdir=nlp_segment.model_save_path)
-        with sv.managed_session(master="") as sess:
-            training_steps = nlp_segment.flags.train_steps
+        #test_unary_score,test_sequence_length = model.test_unary_score()
+
+        #sv = tf.train.Supervisor(graph=graph,logdir= model.model_save_path)
+        #with sv.managed_session(master="") as sess:
+        with tf.Session() as sess:
+            sess.run(tf.global_variables_initializer())
+            training_steps = train_steps
             for step in range(training_steps):
-                if sv.should_stop():
-                    break
+                #if sv.should_stop():
+                    #break
                 try:
                     _,trainsMatrix = sess.run([train_op,model.trains_params])
+                    print(step)
                     if step % 100 == 0:
                         print('[%d] loss: [%r]' % (step,sess.run(total_loss)))
                     if step % 1000 ==0:
-                        test_evaluate(sess,test_unary_score,test_sequence_length,
-                                      trainsMatrix,model.inp,tX,tY)
+                        pass
+                        #test_evaluate(sess,test_unary_score,test_sequence_length,
+                                      #trainsMatrix,model.inp,tX,tY)
                 except KeyboardInterrupt as e:
-                    sv.saver.save(sess,nlp_segment.model_save_path+'/model',global_step= step +1)
+                    #sv.saver.save(sess,ner_tv.training_model_bi_lstm+'/model',global_step= step +1)
                     raise  e
-            sv.saver.save(sess,nlp_segment.model_save_path +"/finnal-model")
+            #sv.saver.save(sess,ner_tv.training_model_bi_lstm +"/finnal-model")
             #tf.train.write_graph(sess.graph_def,'models/','graph.pb')
 
 if __name__ == '__main__':

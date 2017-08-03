@@ -27,17 +27,11 @@ if __name__ == "__main__":
         no = 0
         for line in fread:
             line = line.decode('utf-8')
-            save_list = [0]*160
-            tokens_list = line.split(" ")
-            for index, token in enumerate(tokens_list):
-                words_list = token.split('/')
-                save_list[index] = word2vec.wv.vocab[words_list[0]].index
-                save_list[index +80] = ner_tv.tag_to_id[words_list[1]]
 
             if no %8 ==0:
-                test_write.write((" ".join(save_list) + "\n").encode("utf-8"))
+                test_write.write((line).encode("utf-8"))
             else:
-                train_write.write((" ".join(save_list) + "\n").encode("utf-8"))
+                train_write.write((line).encode("utf-8"))
             no += 1
 
     test_write.close()

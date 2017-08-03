@@ -36,7 +36,7 @@ def train():
                     print("第{}轮训练 ，第{}步，准确值是{:g}".format(num_poch + 1, step, accuracy))
 
             step = model.global_step.eval()
-            accuracy = model.test_accurate(sess,data_dict.inputs_valid,data_dict.labels_valid,data_dict.inputs_length_valid)
+            accuracy = model.test_accurate(sess,data_dict.inputs_valid[:500],data_dict.labels_valid[:500],data_dict.inputs_length_valid[:500])
             print("第{}轮训练 ，第{}步，准确率是{:g}".format(num_poch + 1, step, accuracy))
 
             model.saver.save(sess,model.model_save_path,step)

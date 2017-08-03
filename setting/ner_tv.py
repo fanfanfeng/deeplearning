@@ -4,7 +4,7 @@ import os
 import tensorflow as tf
 
 
-source_type = 1 # 0, github ner 的wordvec model跟训练集
+source_type = 2 # 0, github ner 的wordvec model跟训练集
                 # 1，ner_tv的 worvec model跟训练集
                 # 2，ner_tv的字向量跟训练
 
@@ -23,9 +23,12 @@ elif source_type == 1:
     training_model_bi_lstm = os.path.join(defaultPath.PROJECT_DIRECTORY, "model/ner_tv/bilstm_train_model/")
 elif source_type == 2:
     word2vec_path = os.path.join(defaultPath.PROJECT_DIRECTORY, 'model/ner_tv/single_vector.bin')
+    dict_word2vec_path = os.path.join(defaultPath.PROJECT_DIRECTORY, 'model/ner_tv/single_vector.dict.pkl')
     tag_to_id = {"O": 0, "B-NAME": 1, "I-NAME": 2, "B-ARTIST": 3, "I-ARTIST": 4, "B-CATEGORY": 5, "I-CATEGORY": 6,
                  "B-EPISODE": 7, "I-EPISODE": 8}
     data_path = os.path.join(defaultPath.PROJECT_DIRECTORY, "data/ner_tv/single_tv_data.txt")
+    train_path = os.path.join(defaultPath.PROJECT_DIRECTORY, "data/ner_tv/2/train.txt")
+    test_path = os.path.join(defaultPath.PROJECT_DIRECTORY, "data/ner_tv/2/test.txt")
     tf.flags.DEFINE_integer('tags_num', 9, '分类的数目')
     training_model_bi_lstm = os.path.join(defaultPath.PROJECT_DIRECTORY, "model/ner_tv/bilstm_train_model/")
 
@@ -44,7 +47,7 @@ tf.flags.DEFINE_integer('hidden_layer_num',1,'lstm的层数')
 tf.flags.DEFINE_float('dropout',0.5,'dropout的概率值')
 tf.flags.DEFINE_integer('batch_size',300,"每次批量学习的数目")
 tf.flags.DEFINE_integer('sentence_length',80,'句子长度')
-tf.flags.DEFINE_float("initial_learning_rate",0.01,'初始学习率')
+tf.flags.DEFINE_float("initial_learning_rate",0.001,'初始学习率')
 tf.flags.DEFINE_float('min_learning_rate',0.0001,'最小学习率')
 tf.flags.DEFINE_float('decay_rate',0.3,'学习衰减比例')
 tf.flags.DEFINE_integer('decay_step',1000,'学习率衰减步长')

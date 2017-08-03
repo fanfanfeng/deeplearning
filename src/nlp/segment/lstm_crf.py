@@ -26,7 +26,7 @@ class Model:
         self.embeddingSize = embeddingSize
         self.distinctTagNum = distinctTagNum
         self.numHidden = numHidden
-        self.c2v = data_convert.load_word2Vec(c2vPath)
+        self.c2v = self.c2v(c2vPath)
         self.words = tf.Variable(self.c2v,name = 'words')
         with tf.variable_scope('Softmax') as scope:
             self.W = tf.get_variable(shape=[numHidden *2,distinctTagNum],
@@ -146,15 +146,16 @@ def test_evaluate(sess,unary_score,test_sequence_length,transMatrix,inp,tX,tY):
     print('Accuracy: %.2f%%' % accuracy)
 
 def main(argv):
-    trainDataPath = nlp_segment.train_path
+    trainDataPath = os.path.join(nlp_segment.data_path,"old/train.txt")
+    testDataPath = os.path.join(nlp_segment.data_path, "old/test.txt")
 
     graph = tf.Graph()
     with graph.as_default():
-        model = Model(nlp_segment.flags.embedding_size,nlp_segment.flags.num_tags,nlp_segment.word_vec,
+        model = Model(nlp_segment.flags.embedding_size,nlp_segment.flags.num_tags,nlp_segment.word_vec_path,
                       nlp_segment.flags.num_hidden)
         print('train data path:',trainDataPath)
         X,Y = inputs(trainDataPath)
-        tX,tY = do_load_data(nlp_segment.test_path)
+        tX,tY = do_load_data(testDataPath)
         total_loss = model.loss(X,Y)
         train_op = train(total_loss)
         test_unary_score,test_sequence_length = model.test_unary_score()

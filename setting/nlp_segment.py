@@ -5,13 +5,19 @@ import tensorflow as tf
 
 
 #训练数据设置
-data_path = os.path.join(defaultPath.PROJECT_DIRECTORY,'data/nlp/segment/train.txt')
+data_path = os.path.join(defaultPath.PROJECT_DIRECTORY,'data/nlp/segment')
 
+train_path = os.path.join(data_path,"train.txt")
+test_path = os.path.join(data_path,"test.txt")
+dev_path = os.path.join(data_path,'dev.txt')
 #people 2014 data_path
 people_2014 = os.path.join(data_path,'people2014/2014')
 
+
+
 #词向量目录
 word_vec_path = os.path.join(defaultPath.PROJECT_DIRECTORY,'model/zh_char_word2vec/vectors.model')
+word2id_path = os.path.join(defaultPath.PROJECT_DIRECTORY,"model/zh_char_word2vec/word2id.pkl")
 
 #模型保存位置
 model_save_path = os.path.join(defaultPath.PROJECT_DIRECTORY,'model/nlp/segment')
@@ -28,7 +34,6 @@ tf.flags.DEFINE_integer('max_grad_norm',5,'最大截断值')
 tf.flags.DEFINE_float('dropout',0.5,'dropout的概率值')
 
 tf.flags.DEFINE_integer('num_epochs',200,'重复训练的次数')
-tf.flags.DEFINE_integer('show_every',10,'没训练10次，验证模型')
 tf.flags.DEFINE_integer('valid_every',100,'每训练100次，在测试集上面验证模型')
 tf.flags.DEFINE_integer("checkpoint_every", 200, "没训练200，保存模型")
 

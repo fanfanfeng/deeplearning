@@ -34,7 +34,7 @@ def predict(text):
 
 
 if __name__ == '__main__':
-    text ="奔跑吧第五期的十分钟"
+    text ="我想看成都的天气"
     predict(text)
 
 

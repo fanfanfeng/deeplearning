@@ -5,21 +5,21 @@ from tensorflow.contrib import crf
 from tensorflow.contrib.layers.python.layers import initializers
 from tensorflow.contrib import rnn
 
-from setting import nlp_segment
-from src.nlp.segment import data_loader
+from setting import ner_tv
+from src.ner_tv.v1 import data_loader
 
 class Model():
     def __init__(self):
-        self.learning_rate = nlp_segment.flags.learning_rate
-        self.num_hidden = nlp_segment.flags.num_hidden  #lstm隐层个数
-        self.embedding_size = nlp_segment.flags.embedding_size
-        self.num_tags = nlp_segment.flags.num_tags
-        self.max_grad_norm = nlp_segment.flags.max_grad_norm
-        self.max_sentence_len = nlp_segment.flags.max_sentence_len
-        self.w2v_model_path = nlp_segment.word_vec_path
-        self.model_save_path = nlp_segment.model_save_path
-        self.train_epoch = nlp_segment.flags.num_epochs
-        self.dropout_train = nlp_segment.flags.dropout
+        self.learning_rate = ner_tv.flags.initial_learning_rate
+        self.num_hidden = ner_tv.flags.hidden_neural_size  #lstm隐层个数
+        self.embedding_size = ner_tv.flags.embedding_dim
+        self.num_tags = ner_tv.flags.tags_num
+        self.max_grad_norm = ner_tv.flags.max_grad_norm
+        self.max_sentence_len = ner_tv.flags.sentence_length
+        self.w2v_model_path = ner_tv.word2vec_path
+        self.model_save_path = ner_tv.training_model_bi_lstm
+        self.train_epoch = ner_tv.flags.num_epochs
+        self.dropout_train = ner_tv.flags.dropout
 
         self.initializer = initializers.xavier_initializer()
 

@@ -1,12 +1,12 @@
 # create by fanfan on 2017/7/26 0026
-from setting import nlp_segment
-from src.nlp.segment import data_loader
+from setting import ner_tv
+from src.ner_tv.v1 import data_loader
 import tensorflow as tf
-from src.nlp.segment.v1 import blstm_crf
+from src.ner_tv.v1 import blstm_crf
 
 def train():
-    train_data_manager = data_loader.BatchManager(nlp_segment.train_path, nlp_segment.flags.batch_size)
-    test_data_manager = data_loader.BatchManager(nlp_segment.test_path, nlp_segment.flags.batch_size)
+    train_data_manager = data_loader.BatchManager(ner_tv.train_path, ner_tv.flags.batch_size)
+    test_data_manager = data_loader.BatchManager(ner_tv.test_path, ner_tv.flags.batch_size)
 
     with tf.Session() as sess:
         model = blstm_crf.Model()
@@ -40,8 +40,8 @@ import pickle
 import os
 import numpy as np
 def predict(text):
-    if os.path.exists(nlp_segment.word2id_path):
-        word2id_dict = pickle.load(open(nlp_segment.word2id_path,'rb'))
+    if os.path.exists(ner_tv.dict_word2vec_path):
+        word2id_dict = pickle.load(open(ner_tv.dict_word2vec_path,'rb'))
         words_list = list(text)
         words_list_id = [word2id_dict[i] for i in words_list]
         text_len = len(words_list_id)
@@ -54,17 +54,32 @@ def predict(text):
             model = blstm_crf.Model()
             model.model_restore(sess)
 
-            fenchiResult = ""
+            fenchiResult = {
+                "name":"",
+                "artist":"",
+                "category":"",
+                "episode":""
+            }
+
             path = model.predict(sess,inputs)
             for word,seg_id in zip(words_list,path[0]):
-                if seg_id == 0:
-                    fenchiResult += word + " "
-                elif seg_id == 1:
-                    fenchiResult += word
+                if seg_id == 1:
+                    fenchiResult["name"] += word
                 elif seg_id == 2:
-                    fenchiResult += word
+                    fenchiResult["name"] += word + " "
                 elif seg_id == 3:
-                    fenchiResult += word + " "
+                    fenchiResult["artist"] += word
+                elif seg_id == 4:
+                    fenchiResult["artist"] += word + " "
+                elif seg_id == 5:
+                    fenchiResult["category"] += word
+                elif seg_id == 6:
+                    fenchiResult["category"] += word + " "
+                elif seg_id == 7:
+                    fenchiResult["episode"] += word
+                elif seg_id == 8:
+                    fenchiResult["episode"] += word + " "
+
             return fenchiResult
 
 
@@ -73,7 +88,10 @@ def predict(text):
 
 
 if __name__ == '__main__':
-    text = u'这是一个天大的笑话'
-    print("分词前："+ text)
+    #train()
+    text = u'我想看李连杰的电视剧楚乔传第3集'
     result = predict(text)
-    print("分词后：" + result)
+    print("分词前：" + text)
+    print("分词后：" )
+    for key in result:
+        print("{} : {}".format(key,result[key]))

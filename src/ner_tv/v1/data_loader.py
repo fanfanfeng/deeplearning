@@ -1,7 +1,7 @@
 # create by fanfan on 2017/7/11 0011
 import tensorflow as  tf
 
-from setting import nlp_segment
+from setting import ner_tv
 import numpy as np
 from gensim.models import  Word2Vec
 import pickle
@@ -32,7 +32,7 @@ def load_w2v(model_path):
 def load_data(path):
 
     #获取gensim word2vec所在目录
-    word2vec_path = nlp_segment.word_vec_path
+    word2vec_path = ner_tv.word2vec_path
     word2vec = Word2Vec.load(word2vec_path)
 
     #句号的index,若果句子补助最大长度，用句号去补足
@@ -63,17 +63,17 @@ def load_data(path):
                 words.append(tag_x)
                 words_id.append(word2vec.wv.vocab[tag_x].index)
                 tags.append(tag_y)
-                tag_id = nlp_segment.tag_to_id[tag_y]
+                tag_id = ner_tv.tag_to_id[tag_y]
                 tags_id.append(tag_id)
 
-                if len(words) == nlp_segment.flags.max_sentence_len:
+                if len(words) == ner_tv.flags.sentence_length:
                     break
             length = len(words)
-            if len(words) < nlp_segment.flags.max_sentence_len:
-                words += [0]*(nlp_segment.flags.max_sentence_len - length)
-                tags += ["O"] * (nlp_segment.flags.max_sentence_len - length)
-                words_id += [0] * (nlp_segment.flags.max_sentence_len - length)
-                tags_id += [0] * (nlp_segment.flags.max_sentence_len - length)
+            if len(words) < ner_tv.flags.sentence_length:
+                words += [0]*(ner_tv.flags.sentence_length - length)
+                tags += ["O"] * (ner_tv.flags.sentence_length - length)
+                words_id += [0] * (ner_tv.flags.sentence_length - length)
+                tags_id += [0] * (ner_tv.flags.sentence_length - length)
 
             if words and words_id and len(words) == len(words_id):
                 sentence_words.append(words)
@@ -123,7 +123,12 @@ class BatchManager():
 
 
 if __name__ == '__main__':
-    make_word2id_dict_from_gensim(nlp_segment.word_vec_path,nlp_segment.word2id_path)
+    make_word2id_dict_from_gensim(ner_tv.word2vec_path,ner_tv.dict_word2vec_path)
+    #test = BatchManager(ner_tv.test_path,10)
+    #for batch in test.training_iter():
+        #print(batch['sentence_words'])
+        #print(batch['sentence_tags'])
+        #print(batch['sentence_words_id'])
+        #print(batch['sentence_tags_id'])
+        #break
 
-
-    #BatchManager()
