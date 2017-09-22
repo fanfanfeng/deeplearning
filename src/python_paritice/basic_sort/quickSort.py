@@ -1,5 +1,7 @@
 
-#
+# best n*log(n)
+# worse n**2
+# average n*log(n)
 def quickSort(arr):
     if len(arr) <=1:
         return  arr

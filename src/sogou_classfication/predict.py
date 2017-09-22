@@ -69,4 +69,6 @@ if __name__ == '__main__':
     我想看电影
     """
     print(predict_doc(text))
+    import redis
+    conn = redis.Redis()
 
